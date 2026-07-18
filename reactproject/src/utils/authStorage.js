@@ -1,5 +1,19 @@
 const USERS_KEY = 'institute_users';
 
+const dummyData = [
+  { id: crypto.randomUUID(), role: 'Admin', fullName: 'Admin User', email: 'admin@institute.edu', phone: '555-0001', password: 'password', department: 'Administration' },
+  { id: crypto.randomUUID(), role: 'Staff', fullName: 'Dr. Alan Turing', email: 'alan@institute.edu', phone: '555-0101', password: 'password', department: 'Computer Science' },
+  { id: crypto.randomUUID(), role: 'Staff', fullName: 'Marie Curie', email: 'marie@institute.edu', phone: '555-0102', password: 'password', department: 'Physics' },
+  { id: crypto.randomUUID(), role: 'Student', fullName: 'Alice Smith', email: 'alice@student.edu', phone: '555-0201', password: 'password', course: 'B.Sc Computer Science', semester: '4th' },
+  { id: crypto.randomUUID(), role: 'Student', fullName: 'Bob Johnson', email: 'bob@student.edu', phone: '555-0202', password: 'password', course: 'B.Sc Physics', semester: '2nd' },
+];
+
+export function initializeDummyData() {
+  if (!localStorage.getItem(USERS_KEY)) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(dummyData));
+  }
+}
+
 export function getUsers() {
   const data = localStorage.getItem(USERS_KEY);
   return data ? JSON.parse(data) : [];
@@ -16,6 +30,17 @@ export function saveUser(user) {
   users.push(user);
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
   return { success: true };
+}
+
+export function updateUser(id, updatedData) {
+  const users = getUsers();
+  const index = users.findIndex(u => u.id === id);
+  if (index !== -1) {
+    users[index] = { ...users[index], ...updatedData };
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    return { success: true };
+  }
+  return { success: false, error: 'User not found' };
 }
 
 export function loginUser(email, password) {
