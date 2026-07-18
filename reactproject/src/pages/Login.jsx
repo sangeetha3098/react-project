@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { loginUser } from '../utils/authStorage'
 import { useState } from 'react'
 
-function Login() {
+const Login = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const registered = location.state?.registered
@@ -100,7 +100,7 @@ function Login() {
   )
 }
 
-function Field({ label, name, type = 'text', value, onChange, error, placeholder }) {
+const Field = ({ label, name, type = 'text', value, onChange, error, placeholder }) => {
   return (
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-slate-700">

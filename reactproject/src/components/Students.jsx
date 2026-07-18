@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { getUsers, saveUser, deleteUser, updateUser, getCurrentUser } from '../utils/authStorage';
+import { FiX, FiUsers, FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStudentId, setEditingStudentId] = useState(null);
+  const [studentToDelete, setStudentToDelete] = useState(null);
   const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '', course: '', semester: '' });
   const currentUser = getCurrentUser();
   const isAdmin = currentUser?.role === 'Admin';
@@ -55,10 +57,15 @@ const Students = () => {
     setShowAddForm(true);
   };
 
-  const handleDelete = (id) => {
-    if(confirm('Are you sure you want to delete this student record?')) {
-      deleteUser(id);
+  const handleDeleteClick = (student) => {
+    setStudentToDelete(student);
+  };
+
+  const confirmDelete = () => {
+    if (studentToDelete) {
+      deleteUser(studentToDelete.id);
       loadStudents();
+      setStudentToDelete(null);
     }
   };
 
@@ -93,7 +100,7 @@ const Students = () => {
                 {editingStudentId ? 'Edit Student Record' : 'Register New Student'}
               </h2>
               <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <FiX className="w-6 h-6" />
               </button>
             </div>
             
@@ -138,6 +145,30 @@ const Students = () => {
         </div>
       )}
 
+      {studentToDelete && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4 text-red-600">
+                <FiTrash2 className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-800 mb-2">Delete Student Record?</h2>
+              <p className="text-slate-500 mb-6">
+                Are you sure you want to delete <strong>{studentToDelete.fullName}</strong>? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setStudentToDelete(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-medium">
+                  Cancel
+                </button>
+                <button onClick={confirmDelete} className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl hover:bg-red-700 transition-colors font-medium">
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200">
@@ -154,7 +185,7 @@ const Students = () => {
                 <tr>
                   <td colSpan={canEdit ? "4" : "3"} className="px-6 py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center">
-                      <svg className="w-12 h-12 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                      <FiUsers className="w-12 h-12 text-slate-300 mb-3" />
                       <p>No students enrolled yet.</p>
                     </div>
                   </td>
@@ -186,12 +217,12 @@ const Students = () => {
                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => handleEdit(student)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                             <span className="sr-only">Edit</span>
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            <FiEdit2 className="w-5 h-5" />
                           </button>
                           {isAdmin && (
-                            <button onClick={() => handleDelete(student.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                               <span className="sr-only">Delete</span>
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              <FiTrash2 className="w-5 h-5" />
                             </button>
                           )}
                         </div>

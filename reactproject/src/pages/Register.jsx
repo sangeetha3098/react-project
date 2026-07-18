@@ -11,7 +11,7 @@ const initialForm = {
   role: 'Admin',
 }
 
-function Register() {
+const Register = () => {
   const navigate = useNavigate()
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
@@ -189,7 +189,7 @@ function Register() {
   )
 }
 
-function Field({ label, name, type = 'text', value, onChange, error, placeholder }) {
+const Field = ({ label, name, type = 'text', value, onChange, error, placeholder }) => {
   return (
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-slate-700">
