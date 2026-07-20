@@ -98,7 +98,7 @@ const Register = () => {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-slate-900">Create Admin Account</h1>
           <p className="mt-2 text-sm text-slate-500">
-            Register as an institute administrator
+            Register as an Institute administrator
           </p>
         </div>
 
@@ -156,21 +156,21 @@ const Register = () => {
             <label htmlFor="role" className="block text-sm font-medium text-slate-700">
               Role
             </label>
-              <select
-                id="role"
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              >
-                <option value="Admin">Admin</option>
-                <option value="Student">Student</option>
-                <option value="Staff">Staff</option>
-              </select>
-              <p className="mt-1 text-xs text-slate-500">
-                You can add Students and Staff later from the dashboard.
-              </p>
-              {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
+            <select
+              id="role"
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            >
+              <option value="Admin">Admin</option>
+              <option value="Student">Student</option>
+              <option value="Staff">Staff</option>
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              You can add Students and Staff later from the dashboard.
+            </p>
+            {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
           </div>
 
           {submitError && (
@@ -214,11 +214,10 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full rounded-lg border px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 ${
-            error
+          className={`w-full rounded-lg border px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 ${error
               ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
               : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
-          } ${isPassword ? 'pr-10' : ''}`}
+            } ${isPassword ? 'pr-10' : ''}`}
         />
         {isPassword && (
           <button
