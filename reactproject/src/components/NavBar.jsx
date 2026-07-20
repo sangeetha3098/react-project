@@ -9,7 +9,7 @@ const NavBar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (!user) return null;
+  if (!user || location.pathname === '/login' || location.pathname === '/register') return null;
 
   const handleLogout = () => {
     logoutUser();

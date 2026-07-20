@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { saveUser } from '../utils/authStorage'
+import { saveUser, getCurrentUser } from '../utils/authStorage'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 
 const initialForm = {
   fullName: '',
@@ -13,6 +14,12 @@ const initialForm = {
 
 const Register = () => {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (getCurrentUser()) {
+      navigate('/dashboard')
+    }
+  }, [navigate])
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState('')
@@ -190,24 +197,39 @@ const Register = () => {
 }
 
 const Field = ({ label, name, type = 'text', value, onChange, error, placeholder }) => {
+  const [showPassword, setShowPassword] = useState(false)
+  const isPassword = type === 'password'
+  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type
+
   return (
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-slate-700">
         {label}
       </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`mt-1 w-full rounded-lg border px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 ${
-          error
-            ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-            : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
-        }`}
-      />
+      <div className="relative mt-1">
+        <input
+          id={name}
+          name={name}
+          type={inputType}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`w-full rounded-lg border px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 ${
+            error
+              ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
+              : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
+          } ${isPassword ? 'pr-10' : ''}`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+          </button>
+        )}
+      </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   )

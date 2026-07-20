@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { getCurrentUser } from './utils/authStorage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from "./components/Dashboard";
@@ -14,7 +15,7 @@ const App = () => {
       <NavBar />
       <div className="bg-slate-50 min-h-screen">
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to={getCurrentUser() ? "/dashboard" : "/login"} replace />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route 
