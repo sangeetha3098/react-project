@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { loginUser, getCurrentUser } from '../utils/authStorage'
 import { useState, useEffect } from 'react'
-import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiEye, FiEyeOff, FiBookOpen, FiCheckCircle } from 'react-icons/fi'
 
 const Login = () => {
   const location = useLocation()
@@ -12,6 +12,7 @@ const Login = () => {
       navigate('/dashboard')
     }
   }, [navigate])
+
   const registered = location.state?.registered
   const email = location.state?.email
 
@@ -29,9 +30,9 @@ const Login = () => {
   const validate = () => {
     const nextErrors = {}
     if (!form.email.trim()) {
-      nextErrors.email = 'Email is required.'
+      nextErrors.email = 'Email address is required.'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      nextErrors.email = 'Enter a valid email address.'
+      nextErrors.email = 'Please enter a valid email address.'
     }
     if (!form.password) {
       nextErrors.password = 'Password is required.'
@@ -48,34 +49,46 @@ const Login = () => {
       setSubmitError(result.error)
       return
     }
-    // Redirect to dashboard or home after successful login
     navigate('/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Login</h1>
-          <p className="mt-2 text-sm text-slate-500">Sign in to your Institute account</p>
+    <div className="auth-bg min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 sm:p-10">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 mb-4 animate-float">
+            <FiBookOpen className="w-7 h-7" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Portal Sign In
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Greenfield College of Engineering & Technology
+          </p>
         </div>
 
         {registered && (
-          <p className="mb-5 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-            Registration successful{email ? ` for ${email}` : ''}. Please log in.
-          </p>
+          <div className="mb-6 flex items-center gap-2 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+            <FiCheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>Registration complete{email ? ` for ${email}` : ''}. You can now sign in.</span>
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+
+
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <Field
-            label="Email"
+            label="Email Address"
             name="email"
             type="email"
             value={form.email}
             onChange={handleChange}
             error={errors.email}
-            placeholder="admin@institute.com"
+            placeholder="e.g. admin@gcet.edu.in"
           />
+
           <Field
             label="Password"
             name="password"
@@ -85,23 +98,28 @@ const Login = () => {
             error={errors.password}
             placeholder="••••••••"
           />
+
           {submitError && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{submitError}</p>
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-600">
+              {submitError}
+            </div>
           )}
+
           <button
             type="submit"
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform active:scale-98"
           >
-            Login
+            Sign In
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-700">
-            Register
+        <p className="mt-6 text-center text-xs text-slate-500 font-medium">
+          New student or staff member?{' '}
+          <Link to="/register" className="font-bold text-indigo-600 hover:underline">
+            Register Account
           </Link>
         </p>
+
       </div>
     </div>
   )
@@ -114,10 +132,10 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
 
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={name} className="block text-sm font-semibold text-slate-700 mb-1">
         {label}
       </label>
-      <div className="relative mt-1">
+      <div className="relative">
         <input
           id={name}
           name={name}
@@ -125,9 +143,9 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full rounded-lg border px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 ${error
-              ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-              : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
+          className={`w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none transition-all ${error
+              ? 'border-rose-400 focus:border-rose-500 ring-2 ring-rose-100'
+              : 'border-slate-200 focus:border-indigo-600 ring-2 ring-transparent focus:ring-indigo-100'
             } ${isPassword ? 'pr-10' : ''}`}
         />
         {isPassword && (
@@ -136,11 +154,11 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+            {showPassword ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs font-medium text-rose-600">{error}</p>}
     </div>
   )
 }

@@ -1,166 +1,207 @@
-// We use localStorage to save data locally in the user's browser.
-// This is a simple substitute for a real database (like MongoDB or SQL).
+// LocalStorage helper for Institute Management Portal
 const USERS_KEY = 'institute_users';
 const CURRENT_USER_KEY = 'current_user';
+const ACTIVITIES_KEY = 'institute_activities';
 
-// These are our initial mock users so the app isn't empty on first load.
-const dummyData = [
-  { id: crypto.randomUUID(), role: 'Admin', fullName: 'Admin User', email: 'admin@institute.edu', phone: '555-0001', password: 'password', department: 'Administration' },
-  { id: crypto.randomUUID(), role: 'Staff', fullName: 'Dr. Alan Turing', email: 'alan@institute.edu', phone: '555-0101', password: 'password', department: 'Computer Science' },
-  { id: crypto.randomUUID(), role: 'Staff', fullName: 'Marie Curie', email: 'marie@institute.edu', phone: '555-0102', password: 'password', department: 'Physics' },
-  { id: crypto.randomUUID(), role: 'Student', fullName: 'Alice Smith', email: 'alice@student.edu', phone: '555-0201', password: 'password', course: 'B.Sc Computer Science', semester: '4th' },
-  { id: crypto.randomUUID(), role: 'Student', fullName: 'Bob Johnson', email: 'bob@student.edu', phone: '555-0202', password: 'password', course: 'B.Sc Physics', semester: '2nd' },
+// Initial sample activities so the feed has historical events
+const dummyActivities = [
+  {
+    id: 'act-1',
+    title: 'New student record registered: Aarav Patel (B.Tech CSE)',
+    type: 'student',
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString() // 2 hours ago
+  },
+  {
+    id: 'act-2',
+    title: 'Staff Directory updated by Dr. Rajesh Sharma',
+    type: 'staff',
+    timestamp: new Date(Date.now() - 3600000 * 26).toISOString() // yesterday
+  },
+  {
+    id: 'act-3',
+    title: 'Semester examination schedule uploaded to portal',
+    type: 'notice',
+    timestamp: new Date(Date.now() - 3600000 * 48).toISOString() // 2 days ago
+  }
 ];
 
-/**
- * Populates our fake database with dummyData if it's currently empty.
- * Runs once when the app starts in main.jsx.
- */
+// Initial mock users
+const dummyUsers = [
+  { 
+    id: 'usr-admin-01', 
+    role: 'Admin', 
+    fullName: 'Dr. Rajesh Sharma', 
+    email: 'admin@gcet.edu.in', 
+    phone: '9876543210', 
+    password: 'admin', 
+    department: 'Institute Administration' 
+  },
+  { 
+    id: 'usr-staff-01', 
+    role: 'Staff', 
+    fullName: 'Prof. Ananya Roy', 
+    email: 'ananya.roy@gcet.edu.in', 
+    phone: '9812345678', 
+    password: 'staff', 
+    department: 'Computer Science & Engineering' 
+  },
+  { 
+    id: 'usr-staff-02', 
+    role: 'Staff', 
+    fullName: 'Dr. Vikramaditya Verma', 
+    email: 'vikram.verma@gcet.edu.in', 
+    phone: '9823456789', 
+    password: 'staff', 
+    department: 'Electrical Engineering' 
+  },
+  { 
+    id: 'usr-student-01', 
+    role: 'Student', 
+    fullName: 'Aarav Patel', 
+    email: 'aarav.patel@student.gcet.edu.in', 
+    phone: '9712345678', 
+    password: 'student', 
+    course: 'B.Tech Computer Science', 
+    semester: '4th Semester' 
+  },
+  { 
+    id: 'usr-student-02', 
+    role: 'Student', 
+    fullName: 'Priya Sundaram', 
+    email: 'priya.s@student.gcet.edu.in', 
+    phone: '9723456789', 
+    password: 'student', 
+    course: 'B.Tech Electronics', 
+    semester: '6th Semester' 
+  }
+];
+
 export const initializeDummyData = () => {
   const existingUsers = localStorage.getItem(USERS_KEY);
   if (!existingUsers) {
-    // Save the dummy data as a string in local storage
-    localStorage.setItem(USERS_KEY, JSON.stringify(dummyData));
+    localStorage.setItem(USERS_KEY, JSON.stringify(dummyUsers));
   }
-}
+  const existingActivities = localStorage.getItem(ACTIVITIES_KEY);
+  if (!existingActivities) {
+    localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(dummyActivities));
+  }
+};
 
-/**
- * Retrieves ALL users from the browser's localStorage.
- */
+export const getActivities = () => {
+  const data = localStorage.getItem(ACTIVITIES_KEY);
+  return data ? JSON.parse(data) : [];
+};
+
+export const logActivity = (title, type = 'general') => {
+  let activities = getActivities();
+  const newActivity = {
+    id: 'act-' + crypto.randomUUID(),
+    title,
+    type,
+    timestamp: new Date().toISOString()
+  };
+  // Add to beginning of array
+  activities.unshift(newActivity);
+  // Keep latest 20 activities
+  if (activities.length > 20) {
+    activities = activities.slice(0, 20);
+  }
+  localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities));
+};
+
 export const getUsers = () => {
   const data = localStorage.getItem(USERS_KEY);
-  
-  // If we have data, parse the JSON string back into a real JavaScript array
-  if (data) {
-    return JSON.parse(data);
-  } else {
-    return []; // Return an empty array if nothing is saved yet
-  }
-}
+  return data ? JSON.parse(data) : [];
+};
 
-/**
- * Adds a new user to the storage.
- */
 export const saveUser = (newUser) => {
   let users = getUsers();
-  
-  // 1. Check if someone already signed up with this email
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].email.toLowerCase() === newUser.email.toLowerCase()) {
-      return { success: false, error: 'An account with this email already exists.' };
-    }
+  const exists = users.some(u => u.email.toLowerCase() === newUser.email.toLowerCase());
+  if (exists) {
+    return { success: false, error: 'An account with this email already exists.' };
   }
-  
-  // 2. Add the new user to the end of the array
   users.push(newUser);
-  
-  // 3. Save the updated array back to local storage
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  
-  return { success: true };
-}
 
-/**
- * Updates an existing user's information.
- */
+  // Log dynamic activity event
+  const currentActor = getCurrentUser()?.fullName || newUser.fullName;
+  if (newUser.role === 'Student') {
+    logActivity(`New student record registered: ${newUser.fullName} (${newUser.course || 'Enrolled Student'})`, 'student');
+  } else if (newUser.role === 'Staff') {
+    logActivity(`Staff Directory updated by ${currentActor}: Added ${newUser.fullName}`, 'staff');
+  } else {
+    logActivity(`New Admin account created: ${newUser.fullName}`, 'admin');
+  }
+
+  return { success: true };
+};
+
 export const updateUser = (id, updatedData) => {
   let users = getUsers();
-  let found = false;
-  
-  // 1. Loop through all users to find the one we want to update
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].id === id) {
-      
-      // 2. We found them! Update their data.
-      // The ... spreads out the old data, then the updatedData overwrites it.
-      users[i] = { ...users[i], ...updatedData };
-      found = true;
-      break; // Stop looping since we found the user
-    }
-  }
-
-  // If we didn't find the user, return an error
-  if (!found) {
+  let foundIndex = users.findIndex(u => u.id === id);
+  if (foundIndex === -1) {
     return { success: false, error: 'User not found' };
   }
 
-  // 3. Save the updated array back to local storage
+  const oldUser = users[foundIndex];
+  users[foundIndex] = { ...oldUser, ...updatedData };
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  return { success: true };
-}
+  
+  // Update current session if the updated user is logged in
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.id === id) {
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(users[foundIndex]));
+  }
 
-/**
- * Deletes a user by their ID.
- */
+  // Log dynamic activity event
+  const actorName = currentUser?.fullName || oldUser.fullName;
+  if (oldUser.role === 'Student') {
+    logActivity(`Student profile updated for ${users[foundIndex].fullName} by ${actorName}`, 'student');
+  } else if (oldUser.role === 'Staff') {
+    logActivity(`Staff Directory updated by ${actorName}: Updated record of ${users[foundIndex].fullName}`, 'staff');
+  } else {
+    logActivity(`Admin details updated for ${users[foundIndex].fullName}`, 'admin');
+  }
+
+  return { success: true };
+};
+
 export const deleteUser = (id) => {
   let users = getUsers();
-  let remainingUsers = [];
-  
-  // 1. Loop through all users
-  for (let i = 0; i < users.length; i++) {
-    
-    // 2. If this is NOT the user we want to delete, keep them
-    if (users[i].id !== id) {
-      remainingUsers.push(users[i]);
-    }
+  const targetUser = users.find(u => u.id === id);
+  const filtered = users.filter(u => u.id !== id);
+  localStorage.setItem(USERS_KEY, JSON.stringify(filtered));
+
+  // Log dynamic activity event
+  if (targetUser) {
+    const actorName = getCurrentUser()?.fullName || 'Admin';
+    logActivity(`${targetUser.role} record for ${targetUser.fullName} removed by ${actorName}`, 'delete');
   }
-  
-  // 3. Save the new array (which is missing the deleted user) back to storage
-  localStorage.setItem(USERS_KEY, JSON.stringify(remainingUsers));
-  
+
   return { success: true };
-}
+};
 
-
-/* ==============================================================
-   AUTHENTICATION FUNCTIONS (LOGIN, LOGOUT, GET CURRENT USER)
-   ============================================================== */
-
-/**
- * Verifies email and password to log someone in.
- */
 export const loginUser = (email, password) => {
-  let users = getUsers();
+  const users = getUsers();
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
   
-  // 1. Loop through users to find a matching email
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].email.toLowerCase() === email.toLowerCase()) {
-      
-      // 2. Check if the password matches
-      if (users[i].password === password) {
-        
-        // 3. Password matches! Save them as the currently logged in user
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(users[i]));
-        return { success: true, user: users[i] };
-        
-      } else {
-        return { success: false, error: 'Incorrect password.' };
-      }
-    }
+  if (!user) {
+    return { success: false, error: 'User with this email not found.' };
+  }
+  if (user.password !== password) {
+    return { success: false, error: 'Invalid password. Please check and try again.' };
   }
   
-  // If the loop finishes and we didn't find the email
-  return { success: false, error: 'Email not found.' };
-}
+  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  return { success: true, user };
+};
 
-/**
- * Gets the profile of the person who is currently logged in.
- */
 export const getCurrentUser = () => {
   const data = localStorage.getItem(CURRENT_USER_KEY);
-  
-  if (data) {
-    return JSON.parse(data);
-  } else {
-    return null; // Nobody is logged in
-  }
-}
+  return data ? JSON.parse(data) : null;
+};
 
-/**
- * Logs the user out by removing their info from localStorage.
- */
 export const logoutUser = () => {
   localStorage.removeItem(CURRENT_USER_KEY);
   return { success: true };
-}
-
+};

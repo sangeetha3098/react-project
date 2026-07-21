@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { saveUser, getCurrentUser } from '../utils/authStorage'
-import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiEye, FiEyeOff, FiBookOpen } from 'react-icons/fi'
 
 const initialForm = {
   fullName: '',
@@ -9,7 +9,8 @@ const initialForm = {
   phone: '',
   password: '',
   confirmPassword: '',
-  role: 'Admin',
+  course: 'B.Tech Computer Science',
+  semester: '1st Semester',
 }
 
 const Register = () => {
@@ -20,6 +21,7 @@ const Register = () => {
       navigate('/dashboard')
     }
   }, [navigate])
+
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState('')
@@ -39,15 +41,15 @@ const Register = () => {
     }
 
     if (!form.email.trim()) {
-      nextErrors.email = 'Email is required.'
+      nextErrors.email = 'Email address is required.'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      nextErrors.email = 'Enter a valid email address.'
+      nextErrors.email = 'Please enter a valid email address.'
     }
 
     if (!form.phone.trim()) {
       nextErrors.phone = 'Phone number is required.'
     } else if (!/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) {
-      nextErrors.phone = 'Enter a valid 10-digit phone number.'
+      nextErrors.phone = 'Enter a valid 10-digit mobile number.'
     }
 
     if (!form.password) {
@@ -62,10 +64,6 @@ const Register = () => {
       nextErrors.confirmPassword = 'Passwords do not match.'
     }
 
-    if (!['Admin', 'Student', 'Staff'].includes(form.role)) {
-      nextErrors.role = 'Role must be Admin, Student, or Staff.';
-    }
-
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
   }
@@ -74,13 +72,16 @@ const Register = () => {
     e.preventDefault()
     if (!validate()) return
 
+    // Role is automatically set strictly to 'Student' for public self-registration
     const result = saveUser({
       id: crypto.randomUUID(),
       fullName: form.fullName.trim(),
       email: form.email.trim().toLowerCase(),
       phone: form.phone.replace(/\D/g, ''),
       password: form.password,
-      role: form.role,
+      role: 'Student', // Strictly Student
+      course: form.course,
+      semester: form.semester,
       createdAt: new Date().toISOString(),
     })
 
@@ -93,104 +94,146 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Create Admin Account</h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Register as an Institute administrator
+    <div className="auth-bg min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <div className="w-full max-w-xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 sm:p-10">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 mb-4 animate-float">
+            <FiBookOpen className="w-7 h-7" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Student Self-Registration
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Greenfield College of Engineering & Technology Portal
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          
           <Field
             label="Full Name"
             name="fullName"
             value={form.fullName}
             onChange={handleChange}
             error={errors.fullName}
-            placeholder="John Doe"
+            placeholder="e.g. Priya Sharma"
           />
 
-          <Field
-            label="Email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            error={errors.email}
-            placeholder="admin@institute.com"
-          />
-
-          <Field
-            label="Phone Number"
-            name="phone"
-            type="tel"
-            value={form.phone}
-            onChange={handleChange}
-            error={errors.phone}
-            placeholder="9876543210"
-          />
-
-          <Field
-            label="Password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            error={errors.password}
-            placeholder="••••••••"
-          />
-
-          <Field
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            error={errors.confirmPassword}
-            placeholder="••••••••"
-          />
-
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-slate-700">
-              Role
-            </label>
-            <select
-              id="role"
-              name="role"
-              value={form.role}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field
+              label="Student Email"
+              name="email"
+              type="email"
+              value={form.email}
               onChange={handleChange}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            >
-              <option value="Admin">Admin</option>
-              <option value="Student">Student</option>
-              <option value="Staff">Staff</option>
-            </select>
-            <p className="mt-1 text-xs text-slate-500">
-              You can add Students and Staff later from the dashboard.
-            </p>
-            {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
+              error={errors.email}
+              placeholder="priya.student@gcet.edu.in"
+            />
+
+            <Field
+              label="Contact Phone"
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              error={errors.phone}
+              placeholder="10-digit mobile number"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="course" className="block text-sm font-semibold text-slate-700 mb-1">
+                Course / Branch
+              </label>
+              <select
+                id="course"
+                name="course"
+                value={form.course}
+                onChange={handleChange}
+                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all"
+              >
+                <option value="B.Tech Computer Science">B.Tech Computer Science</option>
+                <option value="B.Tech Information Technology">B.Tech Information Technology</option>
+                <option value="B.Tech Mechanical Eng.">B.Tech Mechanical Eng.</option>
+                <option value="B.Tech Civil Engineering">B.Tech Civil Engineering</option>
+                <option value="B.Tech Electronics & Comm.">B.Tech Electronics & Comm.</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="semester" className="block text-sm font-semibold text-slate-700 mb-1">
+                Semester / Year
+              </label>
+              <select
+                id="semester"
+                name="semester"
+                value={form.semester}
+                onChange={handleChange}
+                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all"
+              >
+                <option value="1st Semester">1st Semester</option>
+                <option value="2nd Semester">2nd Semester</option>
+                <option value="3rd Semester">3rd Semester</option>
+                <option value="4th Semester">4th Semester</option>
+                <option value="5th Semester">5th Semester</option>
+                <option value="6th Semester">6th Semester</option>
+                <option value="7th Semester">7th Semester</option>
+                <option value="8th Semester">8th Semester</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field
+              label="Password"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              error={errors.password}
+              placeholder="Minimum 6 characters"
+            />
+
+            <Field
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              error={errors.confirmPassword}
+              placeholder="Re-enter password"
+            />
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 font-medium">
+            ℹ️ <strong>Note:</strong> Public registration is strictly for Enrolled Students. Staff and Admin accounts are provisioned securely by Institute Administration.
           </div>
 
           {submitError && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{submitError}</p>
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-600">
+              {submitError}
+            </div>
           )}
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full py-3 px-4 mt-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform active:scale-98"
           >
-            Register
+            Complete Student Registration
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-700">
-            Login
+        <p className="mt-6 text-center text-xs text-slate-500 font-medium">
+          Already registered?{' '}
+          <Link to="/login" className="font-bold text-indigo-600 hover:underline">
+            Sign In Here
           </Link>
         </p>
+
       </div>
     </div>
   )
@@ -203,10 +246,10 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
 
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={name} className="block text-sm font-semibold text-slate-700 mb-1">
         {label}
       </label>
-      <div className="relative mt-1">
+      <div className="relative">
         <input
           id={name}
           name={name}
@@ -214,10 +257,11 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full rounded-lg border px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 ${error
-              ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-              : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
-            } ${isPassword ? 'pr-10' : ''}`}
+          className={`w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none transition-all ${
+            error
+              ? 'border-rose-400 focus:border-rose-500 ring-2 ring-rose-100'
+              : 'border-slate-200 focus:border-indigo-600 ring-2 ring-transparent focus:ring-indigo-100'
+          } ${isPassword ? 'pr-10' : ''}`}
         />
         {isPassword && (
           <button
@@ -225,11 +269,11 @@ const Field = ({ label, name, type = 'text', value, onChange, error, placeholder
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+            {showPassword ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs font-medium text-rose-600">{error}</p>}
     </div>
   )
 }
